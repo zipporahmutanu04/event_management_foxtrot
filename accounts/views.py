@@ -37,7 +37,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.info(request, f"✅ You are now logged in as {username}.")
-                return redirect('home')
+                return redirect('venue:space_list')  
         messages.error(request, "⚠️ Invalid username or password.")
     else:
         form = AuthenticationForm()
@@ -48,7 +48,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.info(request, "👋 You have successfully logged out.")
-    return redirect('login')
+    return redirect('home')
 
 
 @login_required
@@ -56,5 +56,6 @@ def profile_view(request):
     return render(request, 'accounts/profile.html')
 
 
-def home_view(request):
-    return render(request, 'accounts/home.html')
+def home(request):
+    return render(request, 'home.html')  # Now extends base.html
+

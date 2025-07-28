@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Event Space Management{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Find Your Perfect Event Space</h1>
+            <p>Discover and book amazing venues for your academic events, religious gatherings, and special occasions.</p>
+            <div class="hero-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'venue:space_list' %}" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Browse Venues
+                    </a>
+                    <a href="{% url 'bookings:booking_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> My Bookings
+                    </a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-card">
+                <i class="fas fa-calendar-check"></i>
+                <h3>Easy Booking</h3>
+                <p>Simple and quick venue reservation process</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <h2>Why Choose EventSpace?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3>Premium Venues</h3>
+                <p>Access to high-quality spaces perfect for academic conferences, religious events, and social gatherings.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Real-time Availability</h3>
+                <p>Check venue availability instantly and book your preferred dates without delays.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure Booking</h3>
+                <p>Your bookings are protected with our secure platform and approval system.</p>
+            </div>
+            
+            
+        </div>
+    </div>
+</section>
+
+<!-- Event Types Section -->
+<section class="event-types">
+    <div class="container">
+        <h2>Perfect for Every Occasion</h2>
+        <div class="event-types-grid">
+            <div class="event-type-card">
+                <div class="event-type-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3>Academic Events</h3>
+                <p>Conferences, seminars, workshops, and educational gatherings.</p>
+                <ul>
+                    <li>Conference rooms with AV equipment</li>
+                    <li>Lecture halls and auditoriums</li>
+                    <li>Workshop spaces</li>
+                </ul>
+            </div>
+            
+            <div class="event-type-card">
+                <div class="event-type-icon">
+                    <i class="fas fa-pray"></i>
+                </div>
+                <h3>Religious Gatherings</h3>
+                <p>Spiritual events, ceremonies, and community meetings.</p>
+                <ul>
+                    <li>Sacred and respectful environments</li>
+                    <li>Flexible seating arrangements</li>
+                    <li>Peaceful settings</li>
+                </ul>
+            </div>
+            
+            <div class="event-type-card">
+                <div class="event-type-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3>Special Events</h3>
+                <p>Celebrations, meetings, and unique occasions.</p>
+                <ul>
+                    <li>Versatile multipurpose spaces</li>
+                    <li>Customizable layouts</li>
+                    <li>Modern amenities</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+{% if user.is_authenticated %}
+<section class="stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">
+                    <i class="fas fa-building"></i>
+                    <span data-count="25">0</span>+
+                </div>
+                <div class="stat-label">Available Venues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    <i class="fas fa-calendar-check"></i>
+                    <span data-count="150">0</span>+
+                </div>
+                <div class="stat-label">Events Hosted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    <i class="fas fa-users"></i>
+                    <span data-count="500">0</span>+
+                </div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    <i class="fas fa-star"></i>
+                    <span data-count="98">0</span>%
+                </div>
+                <div class="stat-label">Satisfaction Rate</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Book Your Event Space?</h2>
+            <p>Join thousands of satisfied customers who trust EventSpace for their venue needs.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'venue:space_list' %}" class="btn btn-primary btn-large">
+                    <i class="fas fa-search"></i> Explore Venues Now
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-large">
+                    <i class="fas fa-rocket"></i> Start Your Journey
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script>
+    // Animate stats counter
+    function animateStats() {
+        const statsNumbers = document.querySelectorAll('[data-count]');
+        
+        statsNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-count'));
+            const increment = target / 50;
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    stat.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    stat.textContent = Math.floor(current);
+                }
+            }, 30);
+        });
+    }
+
+    // Trigger animation when stats section is visible
+    const statsSection = document.querySelector('.stats');
+    if (statsSection) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                animateStats();
+                observer.disconnect();
+            }
+        });
+        observer.observe(statsSection);
+    }
+</script>
+{% endblock %}

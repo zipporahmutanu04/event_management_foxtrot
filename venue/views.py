@@ -14,3 +14,12 @@ def book_space(request, space_id):
         space.is_booked = True
         space.save()
     return redirect('venue:space_list')
+
+def toggle_booking(request, space_id):
+    """
+    Toggles the booking status of a space.
+    """
+    space = get_object_or_404(Space, pk=space_id)
+    space.is_booked = not space.is_booked
+    space.save()
+    return redirect('venue:space_list')

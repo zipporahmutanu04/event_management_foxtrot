@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Venues - EventSpace{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumb-custom">
+    <div class="container">
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                <li class="breadcrumb-item active">Available Venues</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Venues Header -->
+<section class="venues-header">
+    <div class="venues-header-content">
+        <h1><i class="fas fa-building"></i> Available Venues</h1>
+        <p>Discover and book premium spaces for your next event</p>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section class="filter-section">
+    <div class="filter-card">
+        <div class="filter-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Showing <strong>{{ spaces|length }}</strong> venue{{ spaces|length|pluralize }}</span>
+        </div>
+        <div class="filter-controls">
+            <select id="statusFilter">
+                <option value="all">All Venues</option>
+                <option value="available">Available Only</option>
+                <option value="booked">Booked Only</option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<!-- Venues Section -->
+<section class="venues-section">
+    {% if spaces %}
+        <div class="venue-grid" id="venueGrid">
+            {% for space in spaces %}
+                <div class="venue-card" data-status="{% if space.is_booked %}booked{% else %}available{% endif %}">
+                    <!-- Venue Images Carousel -->
+                    <div class="venue-image-container">
+                        {% if space.image1 or space.image2 or space.image3 %}
+                            <div class="image-carousel" data-venue="{{ space.id }}">
+                                <div class="carousel-track">
+                                    {% if space.image1 %}
+                                        <div class="carousel-slide active" data-image="{{ space.image1.url }}" data-caption="{{ space.name }} - Main View">
+                                            <img src="{{ space.image1.url }}" alt="{{ space.name }} - Image 1" 
+                                                 class="venue-image" 
+                                                 onclick="openModal('{{ space.image1.url }}', '{{ space.name }} - Main View')">
+                                        </div>
+                                    {% endif %}
+                                    {% if space.image2 %}
+                                        <div class="carousel-slide" data-image="{{ space.image2.url }}" data-caption="{{ space.name }} - Interior View">
+                                            <img src="{{ space.image2.url }}" alt="{{ space.name }} - Image 2" 
+                                                 class="venue-image" 
+                                                 onclick="openModal('{{ space.image2.url }}', '{{ space.name }} - Interior View')">
+                                        </div>
+                                    {% endif %}
+                                    {% if space.image3 %}
+                                        <div class="carousel-slide" data-image="{{ space.image3.url }}" data-caption="{{ space.name }} - Setup View">
+                                            <img src="{{ space.image3.url }}" alt="{{ space.name }} - Image 3" 
+                                                 class="venue-image" 
+                                                 onclick="openModal('{{ space.image3.url }}', '{{ space.name }} - Setup View')">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Navigation buttons -->
+                                <button class="carousel-btn carousel-prev" onclick="previousImage({{ space.id }})">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="carousel-btn carousel-next" onclick="nextImage({{ space.id }})">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                
+                                <!-- Image indicators -->
+                                <div class="carousel-indicators">
+                                    {% if space.image1 %}<span class="indicator active" onclick="goToSlide({{ space.id }}, 0)"></span>{% endif %}
+                                    {% if space.image2 %}<span class="indicator" onclick="goToSlide({{ space.id }}, {% if space.image1 %}1{% else %}0{% endif %})"></span>{% endif %}
+                                    {% if space.image3 %}<span class="indicator" onclick="goToSlide({{ space.id }}, {% if space.image1 and space.image2 %}2{% elif space.image1 or space.image2 %}1{% else %}0{% endif %})"></span>{% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="venue-image-placeholder">
+                                <i class="fas fa-building"></i>
+                                <p>No Images Available</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Status Badge -->
+                        <div class="venue-status {% if space.is_booked %}status-booked{% else %}status-available{% endif %}">
+                            {% if space.is_booked %}
+                                <i class="fas fa-lock"></i> Booked
+                            {% else %}
+                                <i class="fas fa-check"></i> Available
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Image Counter -->
+                        {% if space.image1 or space.image2 or space.image3 %}
+                            <div class="image-counter">
+                                <i class="fas fa-camera"></i>
+                                <span>
+                                    {% if space.image1 %}1{% endif %}{% if space.image2 %}{% if space.image1 %}, 2{% else %}1{% endif %}{% endif %}{% if space.image3 %}{% if space.image1 or space.image2 %}, {% if space.image1 and space.image2 %}3{% else %}2{% endif %}{% else %}1{% endif %}{% endif %} 
+                                    photo{% if space.image1 and space.image2 or space.image1 and space.image3 or space.image2 and space.image3 %}s{% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Venue Content -->
+                    <div class="venue-content">
+                        <h3 class="venue-title">{{ space.name }}</h3>
+                        
+                        <div class="venue-details">
+                            <!-- Basic Info Row -->
+                            <div class="detail-row">
+                                <div class="venue-detail">
+                                    <i class="fas fa-users"></i>
+                                    <span><strong>Capacity:</strong> {{ space.capacity }} people</span>
+                                </div>
+                                <div class="venue-detail">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span><strong>Location:</strong> {{ space.location }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Status and Availability -->
+                            <div class="detail-row">
+                                <div class="venue-detail">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span><strong>Status:</strong> {{ space.get_status_display }}</span>
+                                </div>
+                                <div class="venue-detail">
+                                    <i class="fas fa-clock"></i>
+                                    <span><strong>Available:</strong> {% if space.is_booked %}Currently Booked{% else %}Ready to Book{% endif %}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Features -->
+                            <div class="venue-features">
+                                <h4><i class="fas fa-star"></i> Features & Amenities</h4>
+                                <div class="features-grid">
+                                    <div class="feature-item">
+                                        <i class="fas fa-wifi"></i>
+                                        <span>Free WiFi</span>
+                                    </div>
+                                    
+                                    <div class="feature-item">
+                                        <i class="fas fa-parking"></i>
+                                        <span>Parking Available</span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <i class="fas fa-utensils"></i>
+                                        <span>Catering Ready</span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <i class="fas fa-volume-up"></i>
+                                        <span>Sound System</span>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="venue-actions">
+                            {% if not space.is_booked %}
+                                <a href="{% url 'bookings:book_space' space.id %}" class="btn-book">
+                                    <i class="fas fa-calendar-plus"></i> Book Now
+                                </a>
+                            {% else %}
+                                <button class="btn-unavailable" disabled>
+                                    <i class="fas fa-lock"></i> Currently Booked
+                                </button>
+                            {% endif %}
+                            
+                            {% if user.is_staff %}
+                                <a href="{% url 'venue:toggle_booking' space.id %}" class="btn-toggle">
+                                    <i class="fas fa-exchange-alt"></i> Toggle
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-venues">
+            <i class="fas fa-building"></i>
+            <h3>No Venues Available</h3>
+            <p>We're currently updating our venue listings. Please check back soon!</p>
+            <a href="{% url 'home' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img id="modalImage" class="modal-image" src="" alt="">
+        <div id="modalCaption" class="modal-caption"></div>
+    </div>
+</div>
+
+<script>
+// Image Carousel Functions
+function nextImage(venueId) {
+    const carousel = document.querySelector(`[data-venue="${venueId}"] .carousel-track`);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll(`[data-venue="${venueId}"] .indicator`);
+    
+    let currentIndex = 0;
+    slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+            currentIndex = index;
+        }
+        // Initialize carousel auto-slide
+    initCarouselAutoSlide();
+    
+    // Keyboard navigation for carousels
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            const focusedCarousel = document.querySelector('.image-carousel:hover');
+            if (focusedCarousel) {
+                const venueId = focusedCarousel.getAttribute('data-venue');
+                if (e.key === 'ArrowLeft') {
+                    previousImage(venueId);
+                } else {
+                    nextImage(venueId);
+                }
+            }
+        }
+    });
+    
+    // Touch/swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.querySelectorAll('.image-carousel').forEach(carousel => {
+        carousel.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        carousel.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            const venueId = this.getAttribute('data-venue');
+            
+            if (touchEndX < touchStartX - 50) {
+                nextImage(venueId);
+            }
+            if (touchEndX > touchStartX + 50) {
+                previousImage(venueId);
+            }
+        });
+    });
+});
+    
+    slides[currentIndex].classList.remove('active');
+    indicators[currentIndex].classList.remove('active');
+    
+    const nextIndex = (currentIndex + 1) % slides.length;
+    slides[nextIndex].classList.add('active');
+    indicators[nextIndex].classList.add('active');
+}
+
+function previousImage(venueId) {
+    const carousel = document.querySelector(`[data-venue="${venueId}"] .carousel-track`);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll(`[data-venue="${venueId}"] .indicator`);
+    
+    let currentIndex = 0;
+    slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+            currentIndex = index;
+        }
+    });
+    
+    slides[currentIndex].classList.remove('active');
+    indicators[currentIndex].classList.remove('active');
+    
+    const prevIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
+    slides[prevIndex].classList.add('active');
+    indicators[prevIndex].classList.add('active');
+}
+
+function goToSlide(venueId, index) {
+    const carousel = document.querySelector(`[data-venue="${venueId}"] .carousel-track`);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll(`[data-venue="${venueId}"] .indicator`);
+    
+    slides.forEach(slide => slide.classList.remove('active'));
+    indicators.forEach(indicator => indicator.classList.remove('active'));
+    
+    slides[index].classList.add('active');
+    indicators[index].classList.add('active');
+}
+
+// Auto-slide functionality (optional)
+function initCarouselAutoSlide() {
+    const carousels = document.querySelectorAll('.image-carousel');
+    
+    carousels.forEach(carousel => {
+        const venueId = carousel.getAttribute('data-venue');
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        
+        if (slides.length > 1) {
+            setInterval(() => {
+                // Only auto-slide if user isn't hovering over the carousel
+                if (!carousel.matches(':hover')) {
+                    nextImage(venueId);
+                }
+            }, 4000); // Change image every 4 seconds
+        }
+    });
+}
+
+// Image Modal Functions
+function openModal(imageSrc, caption) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    
+    modal.style.display = 'block';
+    modalImage.src = imageSrc;
+    modalCaption.textContent = caption;
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+}
+
+// Status Filter
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const filterValue = this.value;
+    const venueCards = document.querySelectorAll('.venue-card');
+    let visibleCount = 0;
+    
+    venueCards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        
+        if (filterValue === 'all' || filterValue === status) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Update count display
+    const countText = document.querySelector('.filter-info span');
+    const pluralize = visibleCount !== 1 ? 's' : '';
+    countText.innerHTML = `Showing <strong>${visibleCount}</strong> venue${pluralize}`;
+});
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal when clicking outside the image
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+    
+    // Add loading states to booking buttons
+    document.querySelectorAll('.btn-book').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+            this.style.pointerEvents = 'none';
+            
+            // Restore button if navigation fails (fallback)
+            setTimeout(() => {
+                if (this.style.pointerEvents === 'none') {
+                    this.innerHTML = originalText;
+                    this.style.pointerEvents = 'auto';
+                }
+            }, 5000);
+        });
+    });
+    
+    // Add loading states to toggle buttons (for staff)
+    document.querySelectorAll('.btn-toggle').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            this.style.pointerEvents = 'none';
+        });
+    });
+    
+    // Smooth scroll animation for venue cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Apply animation to venue cards
+    document.querySelectorAll('.venue-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        card.style.transitionDelay = `${index * 0.1}s`;
+        observer.observe(card);
+    });
+});
+
+// Add some visual feedback for interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add ripple effect to buttons
+    function createRipple(event) {
+        const button = event.currentTarget;
+        const circle = document.createElement("span");
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+        
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+        circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+        circle.classList.add("ripple");
+        
+        const ripple = button.getElementsByClassName("ripple")[0];
+        if (ripple) {
+            ripple.remove();
+        }
+        
+        button.appendChild(circle);
+    }
+    
+    // Apply ripple effect to action buttons
+    document.querySelectorAll('.btn-book, .btn-toggle').forEach(btn => {
+        btn.addEventListener('click', createRipple);
+    });
+});
+</script>
+
+<style>
+/* Add ripple effect styles */
+.btn-book, .btn-toggle {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 600ms linear;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Enhanced hover effects */
+.venue-card {
+    position: relative;
+}
+
+.venue-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.8s ease;
+    z-index: 1;
+}
+
+.venue-card:hover::before {
+    transform: translateX(100%);
+}
+
+.venue-content {
+    position: relative;
+    z-index: 2;
+}
+</style>
+{% endblock %}

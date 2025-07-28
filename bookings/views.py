@@ -13,8 +13,11 @@ def book_space(request, space_id):
             booking = form.save(commit=False)
             booking.space = space
             booking.user = request.user  # If using login
+            space.is_booked = True
+            space.save()
             booking.save()
             return redirect('bookings:booking_list')  # Or your desired page
+                 
     else:
         form = BookingForm()
     return render(request, 'bookings/book_space.html', {'form': form, 'space': space})
